@@ -15,6 +15,8 @@ RUN apk add --no-cache \
 # Overpass Font
 RUN git clone https://github.com/RedHatOfficial/Overpass.git /tmp/overpass
 
+RUN find /tmp/overpass -name "*.ttf" | head -20
+
 COPY gen_overpass_font.py /tmp/gen_overpass_font.py
 
 RUN python3 /tmp/gen_overpass_font.py \
