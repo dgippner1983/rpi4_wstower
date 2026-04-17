@@ -34,14 +34,6 @@ class TowerCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=20),
         )
 
-
-class TowerBaseEntity(CoordinatorEntity):
-    """Basisklasse für alle Tower-Hardware-Entities mit gemeinsamer device_info."""
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        return self.coordinator.device_info
-
     async def _async_update_data(self):
         try:
             return await self.api.probe()
@@ -75,3 +67,11 @@ class TowerBaseEntity(CoordinatorEntity):
     async def async_fan_off(self):
         await self.api.fan_off()
         await self.async_request_refresh()
+
+
+class TowerBaseEntity(CoordinatorEntity):
+    """Basisklasse für alle Tower-Hardware-Entities mit gemeinsamer device_info."""
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return self.coordinator.device_info

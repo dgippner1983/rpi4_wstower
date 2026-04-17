@@ -4,7 +4,7 @@
 
 ### Add-on `tower_control`
 
-Das Add-on baut/bereitstellt die nativen Host-Tools und startet sie mit den konfigurierten Optionen.
+Das Add-on baut/stellt die nativen Host-Tools bereit und startet sie mit den konfigurierten Optionen.
 
 **Wichtige Dateien:**
 - `addons/tower_control/config.yaml`: Add-on-Metadaten, Optionen und Schema
