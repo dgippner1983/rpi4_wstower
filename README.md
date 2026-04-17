@@ -79,6 +79,12 @@ The integration uses the private key at `/config/.ssh/id_ed25519` by default. Th
 
 A short feature documentation is available in `documentation/functions.md`.
 
+## License
+
+This project is licensed under the **GNU General Public License v3.0 or later** — see [LICENSE](LICENSE) for the full text.
+
+Parts of this software were developed with the assistance of [Claude](https://claude.ai), an AI assistant by Anthropic.
+
 ---
 
 ## 🇩🇪 Deutsch

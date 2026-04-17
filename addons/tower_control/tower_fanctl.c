@@ -1,3 +1,8 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2025-2026 David Gippner <david@gippner.eu>
+// Parts of this software were developed with the assistance of
+// Claude (claude.ai), an AI assistant by Anthropic.
+
 /*
  * tower_fanctl.c — temperature-based fan controller for Waveshare PI4B Mini Tower
  *

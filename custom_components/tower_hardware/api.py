@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025-2026 David Gippner <david@gippner.eu>
+# Parts of this software were developed with the assistance of
+# Claude (claude.ai), an AI assistant by Anthropic.
 from __future__ import annotations
 
 import asyncio
@@ -181,7 +185,7 @@ class TowerApi:
 
     async def oled_text(self, text: str):
         oled = shlex.quote(self.data[CONF_OLED_BINARY])
-        lines = [line.rstrip() for line in text.splitlines()]
+        lines = [line.rstrip() for line in text.replace("\\n", "\n").splitlines()]
         lines = [l for l in lines if l != ""]
         if not lines:
             lines = [""]

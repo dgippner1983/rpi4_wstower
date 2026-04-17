@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2025-2026 David Gippner <david@gippner.eu>
+# Parts of this software were developed with the assistance of
+# Claude (claude.ai), an AI assistant by Anthropic.
 DOMAIN = "tower_hardware"
 
 CONF_SSH_HOST = "ssh_host"
