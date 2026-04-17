@@ -1,4 +1,4 @@
-# Tower Control – OLED-Rotationspaket
+# Tower Control – OLED-Rotationspaket (0.1.1)
 #
 # Voraussetzung: packages in /config/configuration.yaml aktivieren:
 #   homeassistant:
@@ -6,10 +6,16 @@
 #
 # Dann diese Datei nach /config/packages/tower_control.yaml kopieren.
 #
-# Entity-IDs (bei Bedarf in Entwicklerwerkzeuge > Zustände prüfen und anpassen):
+# Entity-IDs (in Entwicklerwerkzeuge > Zustände prüfen und bei Bedarf anpassen):
 #   Seiten-Texte:     text.tower_hardware_oled_page_1/2/3
-#   Wechselfrequenz:  number.tower_hardware_oled_rotation_interval
 #   OLED-Ziel:        text.tower_hardware_oled_text
+#   Wechselfrequenz:  number.tower_hardware_oled_rotation_interval
+#   LED:              light.tower_hardware_led
+#   CPU-Temperatur:   sensor.tower_hardware_cpu_temperature
+
+# ---------------------------------------------------------------------------
+# Hilfs-Entities
+# ---------------------------------------------------------------------------
 
 input_number:
   tower_oled_current_page:
@@ -20,11 +26,36 @@ input_number:
     step: 1
     mode: box
 
+input_select:
+  tower_oled_preset:
+    name: "Tower OLED Voreinstellung"
+    options:
+      - "Eigener Inhalt"
+      - "System-Info"
+      - "Entitäten"
+    initial: "Eigener Inhalt"
+
+input_text:
+  tower_oled_entity_1:
+    name: "Tower OLED Entität 1 (Entity-ID)"
+    initial: ""
+    max: 64
+  tower_oled_entity_2:
+    name: "Tower OLED Entität 2 (Entity-ID)"
+    initial: ""
+    max: 64
+
 timer:
   tower_oled_rotation:
     name: "Tower OLED Rotation"
 
+# ---------------------------------------------------------------------------
+# Automationen
+# ---------------------------------------------------------------------------
+
 automation:
+
+  # --- Rotation: Timer starten -----------------------------------------------
   - id: "tower_oled_rotation_start"
     alias: "Tower OLED – Rotation starten"
     description: >
@@ -43,6 +74,7 @@ automation:
             {{ states('number.tower_hardware_oled_rotation_interval') | int(30) }}
     mode: single
 
+  # --- Rotation: Nächste Seite anzeigen --------------------------------------
   - id: "tower_oled_rotation_next"
     alias: "Tower OLED – Nächste Seite"
     description: >
@@ -85,4 +117,98 @@ automation:
         data:
           duration: >
             {{ states('number.tower_hardware_oled_rotation_interval') | int(30) }}
+    mode: single
+
+  # --- Preset: Seiteninhalte aktualisieren -----------------------------------
+  - id: "tower_oled_preset_update"
+    alias: "Tower OLED – Voreinstellung aktualisieren"
+    description: >
+      Aktualisiert die Seiteninhalte jede Minute wenn eine Voreinstellung aktiv ist.
+      System-Info: HA-Status / Datum+Uhrzeit / CPU-Temperatur.
+      Entitäten:   Datum+Uhrzeit / Entität 1 / Entität 2.
+    trigger:
+      - platform: time_pattern
+        minutes: "/1"
+      - platform: state
+        entity_id: input_select.tower_oled_preset
+    condition:
+      - condition: template
+        value_template: >
+          {{ states('input_select.tower_oled_preset') != 'Eigener Inhalt' }}
+    action:
+      - choose:
+
+          # Preset: System-Info
+          - conditions:
+              - condition: state
+                entity_id: input_select.tower_oled_preset
+                state: "System-Info"
+            sequence:
+              - service: text.set_value
+                target:
+                  entity_id: text.tower_hardware_oled_page_1
+                data:
+                  value: "HA Online"
+              - service: text.set_value
+                target:
+                  entity_id: text.tower_hardware_oled_page_2
+                data:
+                  value: >
+                    {{ now().strftime('%d.%m.%Y') }}\n{{ now().strftime('%H:%M:%S') }}
+              - service: text.set_value
+                target:
+                  entity_id: text.tower_hardware_oled_page_3
+                data:
+                  value: >
+                    CPU: {{ states('sensor.tower_hardware_cpu_temperature')
+                           | float(0) | round(1) }} C
+
+          # Preset: Entitäten
+          - conditions:
+              - condition: state
+                entity_id: input_select.tower_oled_preset
+                state: "Entitäten"
+            sequence:
+              - variables:
+                  eid1: "{{ states('input_text.tower_oled_entity_1') }}"
+                  eid2: "{{ states('input_text.tower_oled_entity_2') }}"
+                  name1: >
+                    {{ (state_attr(eid1, 'friendly_name') or eid1)[:10] }}
+                  val1: "{{ states(eid1) }}"
+                  name2: >
+                    {{ (state_attr(eid2, 'friendly_name') or eid2)[:10] }}
+                  val2: "{{ states(eid2) }}"
+              - service: text.set_value
+                target:
+                  entity_id: text.tower_hardware_oled_page_1
+                data:
+                  value: >
+                    {{ now().strftime('%d.%m.%Y') }}\n{{ now().strftime('%H:%M:%S') }}
+              - service: text.set_value
+                target:
+                  entity_id: text.tower_hardware_oled_page_2
+                data:
+                  value: "{{ name1 }}\n{{ val1 }}"
+              - service: text.set_value
+                target:
+                  entity_id: text.tower_hardware_oled_page_3
+                data:
+                  value: "{{ name2 }}\n{{ val2 }}"
+    mode: single
+
+  # --- LED: Regenbogen beim Systemstart --------------------------------------
+  - id: "tower_led_startup_rainbow"
+    alias: "Tower LED – Regenbogen beim Start"
+    description: >
+      Schaltet die LED beim HA-Start auf den Regenbogen-Effekt.
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - delay: "00:00:15"
+      - service: light.turn_on
+        target:
+          entity_id: light.tower_hardware_led
+        data:
+          effect: "Rainbow"
     mode: single

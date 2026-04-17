@@ -24,7 +24,7 @@ async def async_setup_entry(
 
 
 class CpuTempSensor(TowerBaseEntity, SensorEntity):
-    _attr_name = "Tower CPU Temperature"
+    _attr_name = "CPU Temperature"
     _attr_has_entity_name = True
     _attr_unique_id = "tower_hardware_cpu_temp"
     _attr_device_class = SensorDeviceClass.TEMPERATURE

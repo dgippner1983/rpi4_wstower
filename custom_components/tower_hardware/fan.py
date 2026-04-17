@@ -22,7 +22,7 @@ async def async_setup_entry(
 
 
 class TowerFan(TowerBaseEntity, FanEntity):
-    _attr_name = "Tower Fan"
+    _attr_name = "Fan"
     _attr_has_entity_name = True
     _attr_unique_id = "tower_hardware_fan"
     _attr_supported_features = (

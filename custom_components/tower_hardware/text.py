@@ -30,7 +30,7 @@ async def async_setup_entry(
 
 
 class TowerOledText(TowerBaseEntity, TextEntity):
-    _attr_name = "Tower OLED Text"
+    _attr_name = "OLED Text"
     _attr_has_entity_name = True
     _attr_unique_id = "tower_hardware_oled_text"
     _attr_native_max = 120

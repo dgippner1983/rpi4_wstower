@@ -44,9 +44,9 @@ Die Integration verbindet Home Assistant per SSH mit dem Host und steuert die Bi
 3. Befehle werden per SSH remote ausgeführt.
 4. State-Änderungen werden in Home Assistant aktualisiert.
 
-### OLED-Seitenrotation (`packages/tower_control.yaml`)
+### OLED-Seitenrotation und Presets (`packages/tower_control.yaml`)
 
-Das Paket `packages/tower_control.yaml` stellt eine automatische OLED-Rotation bereit.
+Das Paket `packages/tower_control.yaml` stellt OLED-Rotation, Presets und LED-Startup-Effekt bereit.
 
 **Aktivierung:**
 1. `configuration.yaml` um Packages-Unterstützung erweitern:
@@ -57,12 +57,25 @@ Das Paket `packages/tower_control.yaml` stellt eine automatische OLED-Rotation b
 2. `packages/tower_control.yaml` aus dem Repository nach `/config/packages/` kopieren.
 3. Home Assistant neu starten.
 
-**Funktionsweise:**
-- Ein `counter` (1–3) verfolgt die aktuelle Seite.
+**Rotation:**
+- Ein `input_number` (1–3) verfolgt die aktuelle Seite.
 - Ein `timer` steuert den Wechsel-Takt (Dauer aus `number.tower_hardware_oled_rotation_interval`).
-- Bei Timer-Ablauf wird der Counter inkrementiert, der Text aus dem entsprechenden `text.tower_hardware_oled_page_*`-Slot gelesen und per `text.set_value` an `text.tower_hardware_oled_text` übergeben.
+- Bei Timer-Ablauf wird der Seitenzähler per Modulo weitergeschaltet (`(n % 3) + 1`), der Text aus dem entsprechenden `text.tower_hardware_oled_page_*`-Slot gelesen und per `text.set_value` an `text.tower_hardware_oled_text` übergeben.
 - Leere Slots werden übersprungen (OLED bleibt unverändert).
 - Der Timer startet neu bei HA-Start und bei Änderung der Wechselfrequenz.
+
+**Voreinstellungen (`input_select.tower_oled_preset`):**
+
+| Option | Seite 1 | Seite 2 | Seite 3 |
+|---|---|---|---|
+| Eigener Inhalt | frei (manuell befüllen) | frei | frei |
+| System-Info | `HA Online` | Datum + Uhrzeit (2 Zeilen) | CPU-Temperatur |
+| Entitäten | Datum + Uhrzeit (2 Zeilen) | Entity 1: Name (10 Z.) + Wert | Entity 2: Name (10 Z.) + Wert |
+
+Bei aktiver Voreinstellung (nicht „Eigener Inhalt") werden die Seiteninhalte jede Minute automatisch aktualisiert. Die Entity-IDs für Preset „Entitäten" werden in `input_text.tower_oled_entity_1` und `input_text.tower_oled_entity_2` eingetragen.
+
+**LED-Startup-Effekt:**
+- 15 Sekunden nach HA-Start wird die LED automatisch auf den Regenbogen-Effekt gesetzt.
 
 ## 🇬🇧 English
 
@@ -108,9 +121,9 @@ The integration connects Home Assistant to host binaries via SSH.
 3. Commands are executed remotely over SSH.
 4. Entity states are refreshed in Home Assistant.
 
-### OLED Page Rotation (`packages/tower_control.yaml`)
+### OLED Page Rotation and Presets (`packages/tower_control.yaml`)
 
-The `packages/tower_control.yaml` file provides automatic OLED page rotation.
+The `packages/tower_control.yaml` file provides OLED rotation, presets, and an LED startup effect.
 
 **Setup:**
 1. Enable packages support in `configuration.yaml`:
@@ -121,9 +134,22 @@ The `packages/tower_control.yaml` file provides automatic OLED page rotation.
 2. Copy `packages/tower_control.yaml` from this repository to `/config/packages/`.
 3. Restart Home Assistant.
 
-**How it works:**
-- A `counter` (1–3) tracks the current page.
+**Rotation:**
+- An `input_number` (1–3) tracks the current page.
 - A `timer` controls the switch cadence (duration from `number.tower_hardware_oled_rotation_interval`).
-- On timer expiry, the counter increments, the text from the matching `text.tower_hardware_oled_page_*` slot is read and pushed to `text.tower_hardware_oled_text` via `text.set_value`.
+- On timer expiry, the page counter advances via modulo (`(n % 3) + 1`), the text from the matching `text.tower_hardware_oled_page_*` slot is read and pushed to `text.tower_hardware_oled_text` via `text.set_value`.
 - Empty slots are skipped (OLED remains unchanged).
 - The timer restarts on HA start and whenever the interval entity changes.
+
+**Presets (`input_select.tower_oled_preset`):**
+
+| Option | Page 1 | Page 2 | Page 3 |
+|---|---|---|---|
+| Custom | free (edit manually) | free | free |
+| System-Info | `HA Online` | Date + time (2 lines) | CPU temperature |
+| Entities | Date + time (2 lines) | Entity 1: name (10 chars) + value | Entity 2: name (10 chars) + value |
+
+When a preset is active (not "Custom"), page contents are refreshed every minute. Entity IDs for the "Entities" preset are configured via `input_text.tower_oled_entity_1` and `input_text.tower_oled_entity_2`.
+
+**LED startup effect:**
+- 15 seconds after HA start, the LED is automatically set to the Rainbow effect.

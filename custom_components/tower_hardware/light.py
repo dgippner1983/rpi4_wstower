@@ -27,7 +27,7 @@ async def async_setup_entry(
 
 
 class TowerLedLight(TowerBaseEntity, LightEntity):
-    _attr_name = "Tower LED"
+    _attr_name = "LED"
     _attr_has_entity_name = True
     _attr_supported_color_modes = {ColorMode.RGB}
     _attr_color_mode = ColorMode.RGB

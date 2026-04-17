@@ -1,7 +1,7 @@
 {
   "domain": "tower_hardware",
   "name": "Tower Hardware",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "documentation": "https://github.com/your-github-user/rpi4_minitower_haos/tree/main/documentation",
   "requirements": [],
   "codeowners": [],
