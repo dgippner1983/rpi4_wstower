@@ -1,4 +1,4 @@
-# Tower Control 0.1.1
+# Tower Control 0.2.0
 
 Enthält die OLED- und LED-Steuerung für den [Waveshare PI4B Mini Tower Acce](https://www.waveshare.com/wiki/PI4B_Mini_Tower_Acce#Connection_Details)
 
@@ -10,7 +10,6 @@ Enthält die OLED- und LED-Steuerung für den [Waveshare PI4B Mini Tower Acce](h
 - `Dockerfile` – Multi-Stage-Build für die Host-Binaries
 - `run.sh` – Add-on-Startskript
 - `config.yaml` – Home-Assistant-Add-on-Konfiguration
-- `translations/de.yaml`, `translations/en.yaml` – Bezeichnungen für die Add-on-Optionen
 
 ## Add-on-Optionen
 

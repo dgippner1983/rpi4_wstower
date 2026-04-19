@@ -1,20 +1,23 @@
-# Tower Control – OLED-Rotationspaket (0.1.1)
+# Tower Control – Packages-Datei (0.2.0)
+#
+# WICHTIG (0.2.0): Die OLED-Rotationsautomationen und Hilfs-Entities
+# (tower_oled_current_page, tower_oled_rotation, tower_oled_preset, …)
+# sind mit Version 0.2.0 DEPRECATED. Die Rotation läuft jetzt direkt
+# in der Integration (Optionen → OLED-Seiten konfigurieren).
+# Diese Automationen können entfernt werden, wenn kein Upgrade von 0.1.x
+# mehr benötigt wird.
+#
+# NOCH RELEVANT: Der LED-Startup-Effekt am Ende dieser Datei.
 #
 # Voraussetzung: packages in /config/configuration.yaml aktivieren:
 #   homeassistant:
 #     packages: !include_dir_named packages
 #
 # Dann diese Datei nach /config/packages/tower_control.yaml kopieren.
-#
-# Entity-IDs (in Entwicklerwerkzeuge > Zustände prüfen und bei Bedarf anpassen):
-#   Seiten-Texte:     text.tower_hardware_oled_page_1/2/3
-#   OLED-Ziel:        text.tower_hardware_oled_text
-#   Wechselfrequenz:  number.tower_hardware_oled_rotation_interval
-#   LED:              light.tower_hardware_led
-#   CPU-Temperatur:   sensor.tower_hardware_cpu_temperature
 
 # ---------------------------------------------------------------------------
-# Hilfs-Entities
+# DEPRECATED seit 0.2.0 – Hilfs-Entities für OLED-Rotation
+# (können entfernt werden wenn 0.2.0 Integrationsoptionen genutzt werden)
 # ---------------------------------------------------------------------------
 
 input_number:
@@ -50,15 +53,17 @@ timer:
     name: "Tower OLED Rotation"
 
 # ---------------------------------------------------------------------------
-# Automationen
+# DEPRECATED seit 0.2.0 – Automationen für OLED-Rotation
 # ---------------------------------------------------------------------------
 
 automation:
 
   # --- Rotation: Timer starten -----------------------------------------------
+  # DEPRECATED: In 0.2.0 übernimmt die Integration die Rotation intern.
   - id: "tower_oled_rotation_start"
     alias: "Tower OLED – Rotation starten"
     description: >
+      DEPRECATED seit 0.2.0 – nur noch für 0.1.x relevant.
       Startet den Rotationstimer beim HA-Start und bei Änderung der Wechselfrequenz.
     trigger:
       - platform: homeassistant
@@ -75,11 +80,12 @@ automation:
     mode: single
 
   # --- Rotation: Nächste Seite anzeigen --------------------------------------
+  # DEPRECATED: In 0.2.0 übernimmt die Integration die Rotation intern.
   - id: "tower_oled_rotation_next"
     alias: "Tower OLED – Nächste Seite"
     description: >
-      Zeigt beim Timer-Ablauf die nächste nicht-leere Seite auf dem OLED an
-      und startet den Timer neu.
+      DEPRECATED seit 0.2.0 – nur noch für 0.1.x relevant.
+      Zeigt beim Timer-Ablauf die nächste nicht-leere Seite auf dem OLED an.
     trigger:
       - platform: event
         event_type: timer.finished
@@ -120,12 +126,11 @@ automation:
     mode: single
 
   # --- Preset: Seiteninhalte aktualisieren -----------------------------------
+  # DEPRECATED: In 0.2.0 übernimmt die Integration die Rotation intern.
   - id: "tower_oled_preset_update"
     alias: "Tower OLED – Voreinstellung aktualisieren"
     description: >
-      Aktualisiert die Seiteninhalte jede Minute wenn eine Voreinstellung aktiv ist.
-      System-Info: HA-Status / Datum+Uhrzeit / CPU-Temperatur.
-      Entitäten:   Datum+Uhrzeit / Entität 1 / Entität 2.
+      DEPRECATED seit 0.2.0 – nur noch für 0.1.x relevant.
     trigger:
       - platform: time_pattern
         minutes: "/1"
@@ -137,8 +142,6 @@ automation:
           {{ states('input_select.tower_oled_preset') != 'Eigener Inhalt' }}
     action:
       - choose:
-
-          # Preset: System-Info
           - conditions:
               - condition: state
                 entity_id: input_select.tower_oled_preset
@@ -162,8 +165,6 @@ automation:
                   value: >
                     CPU: {{ states('sensor.tower_hardware_cpu_temperature')
                            | float(0) | round(1) }} C
-
-          # Preset: Entitäten
           - conditions:
               - condition: state
                 entity_id: input_select.tower_oled_preset
@@ -196,7 +197,11 @@ automation:
                   value: "{{ name2 }}\n{{ val2 }}"
     mode: single
 
-  # --- LED: Regenbogen beim Systemstart --------------------------------------
+  # ---------------------------------------------------------------------------
+  # AKTIV – LED-Startup-Effekt (weiterhin relevant in 0.2.0)
+  # ---------------------------------------------------------------------------
+
+  # Schaltet die LED beim HA-Start auf den Regenbogen-Effekt.
   - id: "tower_led_startup_rainbow"
     alias: "Tower LED – Regenbogen beim Start"
     description: >

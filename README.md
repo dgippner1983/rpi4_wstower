@@ -1,30 +1,29 @@
-# Tower Control for Home Assistant 0.1.1
+# Tower Control for Home Assistant 0.2.0
 
 ## 🇬🇧 English
 
 This repository provides a complete package for using the Raspberry Pi 4 [Waveshare PI4B Mini Tower Acce](https://www.waveshare.com/wiki/PI4B_Mini_Tower_Acce#Connection_Details) with Home Assistant:
 
-- **Home Assistant Add-on** to deploy native host control binaries (`tower_ledctl`, `tower_oledctl`)
-- **Custom Integration** (`tower_hardware`) for direct LED/OLED control in Home Assistant
+- **Home Assistant Add-on** to deploy native host control binaries (`tower_ledctl`, `tower_oledctl`, `tower_fanctl`)
+- **Custom Integration** (`tower_hardware`) for LED, OLED, and fan control directly in Home Assistant
 - **HACS-compatible layout** so the integration can be installed from a custom repository
 
 ### Included components
 
 - Add-on: `addons/tower_control`
 - Integration (HACS/custom component): `custom_components/tower_hardware`
-- Existing source/development structure: `Addon/` and `Integration/`
 
 ### Features
 
 - LED exposed as a `light` entity with color, brightness, and effects (Blink Slow/Fast, Rainbow, Pulse)
 - OLED direct control via a `text` entity (`Tower OLED Text`) with up to 3 lines
-- OLED page rotation: 3 configurable `text` slots (`Tower OLED Page 1–3`) rotate automatically based on a configurable `number` entity interval
-- Fan exposed as a `fan` entity with speed and auto/manual preset
+- **OLED page rotation built-in**: configure up to 6 HA entities in the integration options — the integration reads their states, formats label + value + unit, and rotates automatically. No automations required.
+- Fan exposed as a `fan` entity with speed control (0–100 %) and Auto/Manual preset; `turn_off` switches to automatic temperature control
 - CPU temperature as a `sensor` entity
 - LED/OLED/fan availability as `binary_sensor` entities
 - All entities grouped under a single **Tower Hardware** device
-- Ready-to-use HA packages file (`packages/tower_control.yaml`) for OLED rotation automation
 - Configurable SSH execution for host-side binaries
+- Optional: `packages/tower_control.yaml` for an LED startup rainbow effect
 
 ### Add-on installation (Home Assistant Add-on Repository)
 
@@ -45,6 +44,20 @@ Default integration binary paths:
 
 - LED: `/mnt/data/supervisor/share/tower_control/tower_ledctl`
 - OLED: `/mnt/data/supervisor/share/tower_control/tower_oledctl`
+- Fan: `/mnt/data/supervisor/share/tower_control/tower_fanctl`
+
+### OLED page rotation setup
+
+After adding the integration, click **Configure** (or **Options**) on the Tower Hardware entry:
+
+- Set the **rotation interval** (seconds).
+- For each page (up to 6): select an entity from the dropdown, optionally enter a label and unit.
+
+The integration will then automatically display and rotate the pages. Empty page slots are skipped.
+
+**Display format per page:**
+- With label: line 1 = label, line 2 = value + unit
+- Without label: single line with value + unit
 
 ### SSH key setup
 
@@ -77,7 +90,9 @@ The integration uses the private key at `/config/.ssh/id_ed25519` by default. Th
 
 ## Documentation
 
-A short feature documentation is available in `documentation/functions.md`.
+A full feature reference is available in [`documentation/functions.md`](documentation/functions.md).
+
+The [CHANGELOG](CHANGELOG.md) documents all changes per version.
 
 ## License
 
@@ -91,27 +106,26 @@ Parts of this software were developed with the assistance of [Claude](https://cl
 
 Dieses Repository enthält ein vollständiges Paket für den Raspberry Pi 4 [Waveshare PI4B Mini Tower Acce](https://www.waveshare.com/wiki/PI4B_Mini_Tower_Acce#Connection_Details) in Home Assistant:
 
-- **Home Assistant Add-on** zum Bereitstellen der nativen Steuerungs-Binaries auf dem Host (`tower_ledctl`, `tower_oledctl`)
-- **Custom Integration** (`tower_hardware`) zur direkten Einbindung von LED- und OLED-Steuerung in Home Assistant
+- **Home Assistant Add-on** zum Bereitstellen der nativen Steuerungs-Binaries auf dem Host (`tower_ledctl`, `tower_oledctl`, `tower_fanctl`)
+- **Custom Integration** (`tower_hardware`) zur direkten Einbindung von LED-, OLED- und Lüftersteuerung in Home Assistant
 - **HACS-kompatible Struktur**, damit die Integration als Custom Repository installiert werden kann
 
 ### Enthaltene Bestandteile
 
 - Add-on: `addons/tower_control`
 - Integration (HACS/Custom Component): `custom_components/tower_hardware`
-- Zusätzliche Entwickler-/Quellstruktur (bestehend): `Addon/` und `Integration/`
 
 ### Funktionsumfang
 
 - LED als `light`-Entity mit Farbe, Helligkeit und Effekten (Blink Slow/Fast, Rainbow, Pulse)
-- OLED Direktsteuerung über eine `text`-Entity (`Tower OLED Text`) mit bis zu 3 Zeilen
-- OLED Seitenrotation: 3 konfigurierbare `text`-Slots (`Tower OLED Page 1–3`) wechseln automatisch basierend auf einem konfigurierbaren `number`-Entity-Intervall
-- Lüfter als `fan`-Entity mit Drehzahlregelung und Auto/Manuell-Voreinstellung
+- OLED-Direktsteuerung über eine `text`-Entity (`Tower OLED Text`) mit bis zu 3 Zeilen
+- **Integrierte OLED-Seitenrotation**: bis zu 6 HA-Entities direkt in den Integrationsoptionen konfigurierbar — die Integration liest den Zustand der Entities, formatiert Bezeichnung + Wert + Einheit und rotiert automatisch. Keine Automationen nötig.
+- Lüfter als `fan`-Entity mit Drehzahlregelung (0–100 %) und Auto/Manuell-Preset; `turn_off` wechselt in den temperaturgesteuerten Automatikmodus
 - CPU-Temperatur als `sensor`-Entity
 - Verfügbarkeits-Sensoren für LED/OLED/Lüfter als `binary_sensor`
 - Alle Entities unter einem gemeinsamen **Tower Hardware**-Gerät gruppiert
-- Fertiges HA-Paket (`packages/tower_control.yaml`) für die OLED-Rotationsautomation
 - Konfigurierbare SSH-Verbindung zur Ausführung der Host-Binaries
+- Optional: `packages/tower_control.yaml` für LED-Startup-Regenbogeneffekt
 
 ### Installation Add-on (Home Assistant Add-on Repository)
 
@@ -132,6 +146,20 @@ Standardpfade in der Integration:
 
 - LED: `/mnt/data/supervisor/share/tower_control/tower_ledctl`
 - OLED: `/mnt/data/supervisor/share/tower_control/tower_oledctl`
+- Lüfter: `/mnt/data/supervisor/share/tower_control/tower_fanctl`
+
+### OLED-Seitenrotation einrichten
+
+Nach dem Hinzufügen der Integration auf **Konfigurieren** (bzw. **Optionen**) beim Tower-Hardware-Eintrag klicken:
+
+- **Wechselintervall** in Sekunden einstellen.
+- Pro Seite (bis zu 6): Entity per Dropdown auswählen, optional Bezeichnung und Einheit eintragen.
+
+Die Integration zeigt und rotiert die Seiten dann automatisch. Leere Slots werden übersprungen.
+
+**Anzeigeformat pro Seite:**
+- Mit Bezeichnung: Zeile 1 = Bezeichnung, Zeile 2 = Wert + Einheit
+- Ohne Bezeichnung: eine Zeile mit Wert + Einheit
 
 ### SSH-Schlüssel einrichten
 
@@ -161,3 +189,15 @@ ssh -i /config/.ssh/id_ed25519 -p 22222 root@127.0.0.1 "echo ok"
 ```
 
 Die Integration verwendet standardmäßig den privaten Schlüssel unter `/config/.ssh/id_ed25519`. Der Pfad kann bei der Einrichtung der Integration angepasst werden.
+
+## Dokumentation
+
+Eine vollständige Funktionsreferenz befindet sich in [`documentation/functions.md`](documentation/functions.md).
+
+Der [CHANGELOG](CHANGELOG.md) dokumentiert alle Änderungen je Version.
+
+## Lizenz
+
+Dieses Projekt steht unter der **GNU General Public License v3.0 or later** — der vollständige Text ist in [LICENSE](LICENSE) enthalten.
+
+Teile dieser Software wurden mit Unterstützung von [Claude](https://claude.ai), einem KI-Assistenten von Anthropic, entwickelt.
