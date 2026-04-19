@@ -1,4 +1,4 @@
-# Tower Control for Home Assistant 0.2.0
+# Tower Control for Home Assistant 0.3.0
 
 ## 🇬🇧 English
 
@@ -15,11 +15,13 @@ This repository provides a complete package for using the Raspberry Pi 4 [Wavesh
 
 ### Features
 
-- LED exposed as a `light` entity with color, brightness, and effects (Blink Slow/Fast, Rainbow, Pulse)
-- OLED direct control via a `text` entity (`Tower OLED Text`) with up to 3 lines
-- **OLED page rotation built-in**: configure up to 6 HA entities in the integration options — the integration reads their states, formats label + value + unit, and rotates automatically. No automations required.
+- LED exposed as a `light` entity with color, brightness, and effects: Blink Slow/Fast, Rainbow, Pulse, **Fire**, **Color Wipe**
+- OLED direct control via a `text` entity with up to 3 lines
+- **OLED page rotation built-in**: configure up to 6 HA entities in the integration options — rotates automatically, no automations required
+- **OLED mode select**: switch between *Manual* (static text) and *Automatic* (page rotation) at runtime via a `select` entity
 - Fan exposed as a `fan` entity with speed control (0–100 %) and Auto/Manual preset; `turn_off` switches to automatic temperature control
-- CPU temperature as a `sensor` entity
+- **Startup animation**: on add-on start, a pixel-art raspberry travels across the OLED display toward a house
+- CPU temperature, **RAM free %**, and **Disk free %** as `sensor` entities
 - LED/OLED/fan availability as `binary_sensor` entities
 - All entities grouped under a single **Tower Hardware** device
 - Configurable SSH execution for host-side binaries
@@ -117,11 +119,13 @@ Dieses Repository enthält ein vollständiges Paket für den Raspberry Pi 4 [Wav
 
 ### Funktionsumfang
 
-- LED als `light`-Entity mit Farbe, Helligkeit und Effekten (Blink Slow/Fast, Rainbow, Pulse)
-- OLED-Direktsteuerung über eine `text`-Entity (`Tower OLED Text`) mit bis zu 3 Zeilen
-- **Integrierte OLED-Seitenrotation**: bis zu 6 HA-Entities direkt in den Integrationsoptionen konfigurierbar — die Integration liest den Zustand der Entities, formatiert Bezeichnung + Wert + Einheit und rotiert automatisch. Keine Automationen nötig.
+- LED als `light`-Entity mit Farbe, Helligkeit und Effekten: Blink Slow/Fast, Rainbow, Pulse, **Fire**, **Color Wipe**
+- OLED-Direktsteuerung über eine `text`-Entity mit bis zu 3 Zeilen
+- **Integrierte OLED-Seitenrotation**: bis zu 6 HA-Entities direkt in den Integrationsoptionen konfigurierbar — rotiert automatisch, keine Automationen nötig
+- **OLED-Modus-Auswahl**: zur Laufzeit zwischen *Manuell* (statischer Text) und *Automatisch* (Seitenrotation) wechseln — als `select`-Entity
 - Lüfter als `fan`-Entity mit Drehzahlregelung (0–100 %) und Auto/Manuell-Preset; `turn_off` wechselt in den temperaturgesteuerten Automatikmodus
-- CPU-Temperatur als `sensor`-Entity
+- **Startup-Animation**: beim Add-on-Start wandert eine Pixel-Art-Himbeere über das OLED-Display zu einem Haus
+- CPU-Temperatur, **RAM frei %** und **Disk frei %** als `sensor`-Entities
 - Verfügbarkeits-Sensoren für LED/OLED/Lüfter als `binary_sensor`
 - Alle Entities unter einem gemeinsamen **Tower Hardware**-Gerät gruppiert
 - Konfigurierbare SSH-Verbindung zur Ausführung der Host-Binaries

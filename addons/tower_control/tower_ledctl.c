@@ -214,6 +214,54 @@ static int run_effect_daemon(void) {
             continue;
         }
 
+        if (strcmp(st.effect, "fire") == 0) {
+            static uint8_t heat[LED_COUNT];
+            /* cool down every cell a little */
+            for (int i = 0; i < LED_COUNT; i++) {
+                int cool = (rand() % ((55 * 10) / LED_COUNT + 2));
+                heat[i] = (uint8_t)(heat[i] > cool ? heat[i] - cool : 0);
+            }
+            /* heat drifts upward */
+            for (int i = LED_COUNT - 1; i >= 2; i--)
+                heat[i] = (uint8_t)((heat[i - 1] + heat[i - 2] + heat[i - 2]) / 3);
+            /* random spark near bottom */
+            if ((rand() % 255) < 120) {
+                int y = rand() % 3;
+                int add = 160 + rand() % 95;
+                heat[y] = (uint8_t)(heat[y] + add > 255 ? 255 : heat[y] + add);
+            }
+            /* heat -> color: black->red->orange->yellow->white */
+            for (int i = 0; i < LED_COUNT; i++) {
+                uint8_t h = heat[i];
+                uint8_t r, g, b;
+                if (h < 85)      { r = h * 3;       g = 0;           b = 0; }
+                else if (h < 170){ r = 255;          g = (h-85)*3;    b = 0; }
+                else             { r = 255;          g = 255;         b = (h-170)*3; }
+                ledstring.channel[LED_CHANNEL].leds[i] = color_rgb(r, g, b, (uint8_t)st.brightness);
+            }
+            ws2811_render(&ledstring);
+            usleep(55000);
+            continue;
+        }
+
+        if (strcmp(st.effect, "color_wipe") == 0) {
+            /* wipe in */
+            for (int i = 0; keep_running && i < LED_COUNT; i++) {
+                ledstring.channel[LED_CHANNEL].leds[i] = color_rgb((uint8_t)st.r, (uint8_t)st.g, (uint8_t)st.b, (uint8_t)st.brightness);
+                ws2811_render(&ledstring);
+                usleep(80000);
+            }
+            usleep(300000);
+            /* wipe out */
+            for (int i = 0; keep_running && i < LED_COUNT; i++) {
+                ledstring.channel[LED_CHANNEL].leds[i] = 0;
+                ws2811_render(&ledstring);
+                usleep(80000);
+            }
+            usleep(300000);
+            continue;
+        }
+
         fill_all(&ledstring, color_rgb((uint8_t)st.r, (uint8_t)st.g, (uint8_t)st.b, (uint8_t)st.brightness));
         ws2811_render(&ledstring);
         usleep(100000);
@@ -230,7 +278,7 @@ static void usage(const char *prog) {
     fprintf(stderr, "Usage:\n");
     fprintf(stderr, "  %s off\n", prog);
     fprintf(stderr, "  %s color R G B BRIGHTNESS\n", prog);
-    fprintf(stderr, "  %s effect blink_slow|blink_fast|rainbow|pulse\n", prog);
+    fprintf(stderr, "  %s effect blink_slow|blink_fast|rainbow|pulse|fire|color_wipe\n", prog);
 }
 
 int main(int argc, char **argv) {
@@ -260,7 +308,7 @@ int main(int argc, char **argv) {
 
     if (strcmp(argv[1], "effect") == 0 && argc >= 3) {
         const char *name = argv[2];
-        if (strcmp(name, "blink_slow") && strcmp(name, "blink_fast") && strcmp(name, "rainbow") && strcmp(name, "pulse")) {
+        if (strcmp(name, "blink_slow") && strcmp(name, "blink_fast") && strcmp(name, "rainbow") && strcmp(name, "pulse") && strcmp(name, "fire") && strcmp(name, "color_wipe")) {
             usage(argv[0]); return 2;
         }
         stop_effect_daemon();

@@ -17,7 +17,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
 from .coordinator import TowerBaseEntity
 
-EFFECTS = ["Blink Slow", "Blink Fast", "Rainbow", "Pulse"]
+EFFECTS = ["Blink Slow", "Blink Fast", "Rainbow", "Pulse", "Fire", "Color Wipe"]
 
 
 async def async_setup_entry(

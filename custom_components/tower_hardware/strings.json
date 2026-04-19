@@ -17,6 +17,22 @@
       }
     }
   },
+  "entity": {
+    "sensor": {
+      "tower_hardware_cpu_temp": {"name": "CPU Temperatur"},
+      "tower_hardware_ram_free": {"name": "RAM frei"},
+      "tower_hardware_disk_free": {"name": "Disk frei"}
+    },
+    "select": {
+      "tower_hardware_oled_mode": {
+        "name": "OLED Modus",
+        "state": {
+          "Manuell": "Manuell",
+          "Automatisch": "Automatisch"
+        }
+      }
+    }
+  },
   "options": {
     "step": {
       "init": {

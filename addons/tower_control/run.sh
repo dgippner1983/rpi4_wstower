@@ -31,6 +31,9 @@ chmod +x "$TARGET/tower_oledctl" "$TARGET/tower_ledctl" "$TARGET/tower_fanctl"
 bashio::log.info "Tower Control tools deployed:"
 ls -l "$TARGET"
 
+bashio::log.info "Playing startup animation"
+"$TARGET/tower_oledctl" startup || true
+
 "$TARGET/tower_fanctl" &
 bashio::log.info "Fan controller started (PID $!)"
 

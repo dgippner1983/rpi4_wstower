@@ -27,4 +27,4 @@ DEFAULT_LED_BINARY = "/mnt/data/supervisor/share/tower_control/tower_ledctl"
 DEFAULT_OLED_BINARY = "/mnt/data/supervisor/share/tower_control/tower_oledctl"
 DEFAULT_FAN_BINARY = "/mnt/data/supervisor/share/tower_control/tower_fanctl"
 
-PLATFORMS = ["light", "text", "binary_sensor", "sensor", "fan", "number"]
+PLATFORMS = ["light", "text", "binary_sensor", "sensor", "fan", "number", "select"]

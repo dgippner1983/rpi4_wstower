@@ -10,7 +10,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from .const import DOMAIN
@@ -20,7 +20,8 @@ from .coordinator import TowerBaseEntity
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
-    async_add_entities([CpuTempSensor(hass.data[DOMAIN][entry.entry_id])], True)
+    coord = hass.data[DOMAIN][entry.entry_id]
+    async_add_entities([CpuTempSensor(coord), RamFreeSensor(coord), DiskFreeSensor(coord)], True)
 
 
 class CpuTempSensor(TowerBaseEntity, SensorEntity):
@@ -34,3 +35,27 @@ class CpuTempSensor(TowerBaseEntity, SensorEntity):
     @property
     def native_value(self) -> float | None:
         return self.coordinator.data["cpu"]["temp"]
+
+
+class RamFreeSensor(TowerBaseEntity, SensorEntity):
+    _attr_name = "RAM frei"
+    _attr_has_entity_name = True
+    _attr_unique_id = "tower_hardware_ram_free"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = PERCENTAGE
+
+    @property
+    def native_value(self) -> float | None:
+        return self.coordinator.data["cpu"]["ram_free_pct"]
+
+
+class DiskFreeSensor(TowerBaseEntity, SensorEntity):
+    _attr_name = "Disk frei"
+    _attr_has_entity_name = True
+    _attr_unique_id = "tower_hardware_disk_free"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = PERCENTAGE
+
+    @property
+    def native_value(self) -> float | None:
+        return self.coordinator.data["cpu"]["disk_free_pct"]

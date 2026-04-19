@@ -8,6 +8,27 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.3.0] – 2026-04-19
+
+### Integration `tower_hardware`
+
+#### Neu / Added
+- **LED-Effekte Fire und Color Wipe** — `fire` simuliert eine Flamme (Heat-Array, Farbgradient schwarz→rot→orange→weiß); `color_wipe` wischt die gewählte Farbe LED für LED ein und zurück.
+- **Sensoren RAM frei % und Disk frei %** — liest `/proc/meminfo` und `df -k /mnt/data` per SSH; beide als `sensor`-Entities mit Zustandsklasse `measurement`.
+- **OLED-Modus-Entity** (`select.tower_hardware_oled_mode`) — schaltet zur Laufzeit zwischen `Manuell` (statischer Text über die Text-Entity) und `Automatisch` (Seitenrotation). Kein Neustart nötig.
+
+#### Geändert / Changed
+- `coordinator.start_oled_rotation()` prüft jetzt `oled_mode`; bei `manual` wird kein Timer gestartet.
+- `EFFECTS`-Liste in `light.py` um `Fire` und `Color Wipe` erweitert.
+
+### Add-on `tower_control`
+
+#### Neu / Added
+- **Startup-Animation** (`tower_oledctl startup`) — beim Add-on-Start wandert eine Pixel-Art-Himbeere (12×13 px) von links über das 128×64-OLED-Display zu einem Haus (16×18 px), blinkt kurz auf und erlischt.
+- `run.sh` ruft `tower_oledctl startup` direkt nach dem Binary-Deploy auf.
+
+---
+
 ## [0.2.0] – 2026-04-19
 
 ### Integration `tower_hardware`

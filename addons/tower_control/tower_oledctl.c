@@ -129,6 +129,107 @@ static void draw_line_centered(const overpass_font_t *font, int baseline_y, cons
     }
 }
 
+/* ── Startup animation: raspberry moves right toward a house ───────────────── */
+
+/* 12-wide sprite rows, bit 11 = leftmost pixel */
+static const uint16_t RASPI[13] = {
+    0x6D8,  /* .XX.XX.XX... drupelets            */
+    0xFFF,  /* XXXXXXXXXXXX full width            */
+    0xFFF,
+    0xFFF,
+    0xFFF,
+    0xFFF,
+    0xFFF,
+    0xFFF,
+    0x7FE,  /* .XXXXXXXXXX.                       */
+    0x3FC,  /* ..XXXXXXXX..                       */
+    0x1F8,  /* ...XXXXXX...                       */
+    0x0F0,  /* ....XXXX....                       */
+    0x060,  /* .....XX..... tip                   */
+};
+#define RASPI_W 12
+#define RASPI_H 13
+
+/* 16-wide sprite rows, bit 15 = leftmost pixel */
+static const uint16_t HOUSE[18] = {
+    0x0180, /* ......XX........ peak               */
+    0x03C0, /* .....XXXX.......                    */
+    0x07E0, /* ....XXXXXX......                    */
+    0x0FF0, /* ...XXXXXXXX.....                    */
+    0x1FF8, /* ..XXXXXXXXXX....                    */
+    0x3FFC, /* .XXXXXXXXXXXX...                    */
+    0x7FFE, /* XXXXXXXXXXXXXX..                    */
+    0xFFFF, /* XXXXXXXXXXXXXXXX eave               */
+    0x7FFE, /* .XXXXXXXXXXXXXX. wall top           */
+    0x6006, /* .XX...........XX                    */
+    0x63E6, /* .XX..XXXXX...XX  windows            */
+    0x63E6,
+    0x6006,
+    0x7FFE, /* .XXXXXXXXXXXXXX.                    */
+    0x61FE, /* .XX....XXXXXXX.  door               */
+    0x61FE,
+    0x61FE,
+    0x7FFE, /* .XXXXXXXXXXXXXX. floor              */
+};
+#define HOUSE_W 16
+#define HOUSE_H 18
+
+static void draw_sprite12(int x0, int y0, const uint16_t *rows, int h) {
+    for (int row = 0; row < h; row++) {
+        uint16_t bits = rows[row];
+        for (int col = 0; col < 12; col++)
+            if (bits & (1u << (11 - col))) set_pixel(x0 + col, y0 + row, 1);
+    }
+}
+
+static void draw_sprite16(int x0, int y0, const uint16_t *rows, int h) {
+    for (int row = 0; row < h; row++) {
+        uint16_t bits = rows[row];
+        for (int col = 0; col < 16; col++)
+            if (bits & (1u << (15 - col))) set_pixel(x0 + col, y0 + row, 1);
+    }
+}
+
+static void sleep_ms(int ms) { usleep((unsigned int)(ms * 1000)); }
+
+static void cmd_startup(void) {
+    /* House sits at right edge, vertically centered */
+    const int house_x = WIDTH - HOUSE_W - 4;   /* x = 108 */
+    const int house_y = (HEIGHT - HOUSE_H) / 2; /* y = 23  */
+
+    /* Raspberry starts left, travels until 6 px gap from house */
+    const int raspi_y = (HEIGHT - RASPI_H) / 2; /* y = 25  */
+    const int raspi_x_end = house_x - RASPI_W - 6;
+    const int raspi_x_start = -RASPI_W;
+
+    /* Slide in: 4 px per frame */
+    for (int x = raspi_x_start; x <= raspi_x_end; x += 4) {
+        fb_clear();
+        draw_sprite16(house_x, house_y, HOUSE, HOUSE_H);
+        draw_sprite12(x, raspi_y, RASPI, RASPI_H);
+        oled_render();
+        sleep_ms(55);
+    }
+
+    /* Arrived: blink raspberry 3 times */
+    for (int i = 0; i < 3; i++) {
+        fb_clear();
+        draw_sprite16(house_x, house_y, HOUSE, HOUSE_H);
+        oled_render();
+        sleep_ms(120);
+        fb_clear();
+        draw_sprite16(house_x, house_y, HOUSE, HOUSE_H);
+        draw_sprite12(raspi_x_end, raspi_y, RASPI, RASPI_H);
+        oled_render();
+        sleep_ms(120);
+    }
+
+    /* Fade out: clear */
+    sleep_ms(300);
+    fb_clear();
+    oled_render();
+}
+
 static void cmd_clear(void) { fb_clear(); oled_render(); }
 static void cmd_text(const char *line) { fb_clear(); int baseline = centered_baseline_for_single(&font_large); draw_line_centered(&font_large, baseline, line); oled_render(); }
 static void cmd_text2(const char *line1, const char *line2) { fb_clear(); int center = centered_baseline_for_single(&font_medium); draw_line_centered(&font_medium, center - (font_medium.line_height / 2), line1); draw_line_centered(&font_medium, center + (font_medium.line_height / 2), line2); oled_render(); }
@@ -140,7 +241,8 @@ int main(int argc, char **argv) {
     if (fd < 0) { perror("I2C open"); return 1; }
     if (ioctl(fd, I2C_SLAVE, OLED_ADDR) < 0) { perror("I2C addr"); close(fd); return 1; }
     oled_init();
-    if (strcmp(argv[1], "clear") == 0) cmd_clear();
+    if (strcmp(argv[1], "startup") == 0) cmd_startup();
+    else if (strcmp(argv[1], "clear") == 0) cmd_clear();
     else if (strcmp(argv[1], "text") == 0 && argc >= 3) cmd_text(argv[2]);
     else if (strcmp(argv[1], "text2") == 0 && argc >= 4) cmd_text2(argv[2], argv[3]);
     else if (strcmp(argv[1], "text3") == 0 && argc >= 5) cmd_text3(argv[2], argv[3], argv[4]);

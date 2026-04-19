@@ -16,7 +16,8 @@ Das Add-on baut die nativen Host-Tools und stellt sie beim Start bereit.
 **Ablauf beim Start:**
 1. Add-on liest Optionen via `bashio::config` aus `config.yaml`.
 2. Binaries werden nach `/share/tower_control/` kopiert (= `/mnt/data/supervisor/share/tower_control/` auf dem Host).
-3. `tower_fanctl` wird als Hintergrund-Daemon gestartet.
+3. `tower_oledctl startup` spielt die Startup-Animation ab (Himbeere wandert zu einem Haus).
+4. `tower_fanctl` wird als Hintergrund-Daemon gestartet.
 
 > **Hinweis:** `map: share:rw` in `config.yaml` ist zwingend erforderlich, damit das Add-on in den Host-Share-Ordner schreiben kann.
 
@@ -52,10 +53,13 @@ Die Integration liest den State der Entities direkt aus HA, formatiert den Text 
 
 | Entity | Typ | Beschreibung |
 |---|---|---|
-| `light.tower_hardware_led` | Light | LED: Farbe (RGB), Helligkeit, Effekte (Blink Slow/Fast, Rainbow, Pulse) |
+| `light.tower_hardware_led` | Light | LED: Farbe (RGB), Helligkeit, Effekte (Blink Slow/Fast, Rainbow, Pulse, Fire, Color Wipe) |
 | `text.tower_hardware_oled_text` | Text | OLED direkt beschreiben (1–3 Zeilen via `\n`, je max. 20 Zeichen) |
+| `select.tower_hardware_oled_mode` | Select | OLED-Modus: `Manuell` (statischer Text) oder `Automatisch` (Seitenrotation) |
 | `fan.tower_hardware_fan` | Fan | Lüfter: Drehzahl (0–100 %), Preset Auto/Manuell; `turn_off` = Auto-Modus |
 | `sensor.tower_hardware_cpu_temperature` | Sensor | CPU-Temperatur des Hosts in °C |
+| `sensor.tower_hardware_ram_free` | Sensor | RAM frei in % (liest `/proc/meminfo`) |
+| `sensor.tower_hardware_disk_free` | Sensor | Disk frei in % (liest `df /mnt/data`) |
 | `binary_sensor.tower_hardware_led_available` | Binary Sensor | LED-Binary auf dem Host vorhanden |
 | `binary_sensor.tower_hardware_oled_available` | Binary Sensor | OLED-Binary auf dem Host vorhanden |
 | `binary_sensor.tower_hardware_fan_available` | Binary Sensor | Lüfter-Binary auf dem Host vorhanden |
@@ -68,10 +72,11 @@ Die Integration liest den State der Entities direkt aus HA, formatiert den Text 
 
 **Interner Ablauf:**
 1. Coordinator pollt zyklisch den Zustand (alle 20 s) via SSH.
-2. API prüft Verfügbarkeit der Binaries (`test -x ...`).
+2. API prüft Verfügbarkeit der Binaries (`test -x ...`) und liest CPU-Temp, RAM- und Disk-Auslastung.
 3. Befehle werden per SSH remote ausgeführt.
-4. OLED-Rotation läuft unabhängig davon per `async_track_time_interval`.
-5. Bei Optionsänderung wird der Rotations-Timer automatisch neu gestartet.
+4. OLED-Rotation läuft unabhängig davon per `async_track_time_interval` — nur wenn `oled_mode == "auto"`.
+5. Die `select`-Entity `OLED Modus` schaltet Rotation zur Laufzeit ein/aus ohne Neustart.
+6. Bei Optionsänderung wird der Rotations-Timer automatisch neu gestartet.
 
 ---
 
@@ -109,7 +114,8 @@ The add-on builds and deploys the native host tools on startup.
 **Startup flow:**
 1. Add-on reads options via `bashio::config` from `config.yaml`.
 2. Binaries are copied to `/share/tower_control/` (= `/mnt/data/supervisor/share/tower_control/` on the host).
-3. `tower_fanctl` is launched as a background daemon.
+3. `tower_oledctl startup` plays the startup animation (pixel-art raspberry walks to a house).
+4. `tower_fanctl` is launched as a background daemon.
 
 > **Note:** `map: share:rw` in `config.yaml` is mandatory so the add-on container can write to the host share folder.
 
@@ -145,10 +151,13 @@ The integration reads entity states directly from HA, formats the text, and send
 
 | Entity | Type | Description |
 |---|---|---|
-| `light.tower_hardware_led` | Light | LED: RGB color, brightness, effects (Blink Slow/Fast, Rainbow, Pulse) |
+| `light.tower_hardware_led` | Light | LED: RGB color, brightness, effects (Blink Slow/Fast, Rainbow, Pulse, Fire, Color Wipe) |
 | `text.tower_hardware_oled_text` | Text | Write directly to OLED (1–3 lines via `\n`, max. 20 chars each) |
+| `select.tower_hardware_oled_mode` | Select | OLED mode: `Manuell` (static text) or `Automatisch` (page rotation) |
 | `fan.tower_hardware_fan` | Fan | Fan: speed (0–100 %), preset Auto/Manual; `turn_off` = switches to auto mode |
 | `sensor.tower_hardware_cpu_temperature` | Sensor | Host CPU temperature in °C |
+| `sensor.tower_hardware_ram_free` | Sensor | RAM free in % (reads `/proc/meminfo`) |
+| `sensor.tower_hardware_disk_free` | Sensor | Disk free in % (reads `df /mnt/data`) |
 | `binary_sensor.tower_hardware_led_available` | Binary Sensor | LED binary present on host |
 | `binary_sensor.tower_hardware_oled_available` | Binary Sensor | OLED binary present on host |
 | `binary_sensor.tower_hardware_fan_available` | Binary Sensor | Fan binary present on host |
@@ -161,10 +170,11 @@ The integration reads entity states directly from HA, formats the text, and send
 
 **Internal flow:**
 1. Coordinator polls state every 20 s via SSH.
-2. API checks binary availability (`test -x ...`).
+2. API checks binary availability (`test -x ...`) and reads CPU temp, RAM, and disk usage.
 3. Commands are executed remotely over SSH.
-4. OLED rotation runs independently via `async_track_time_interval`.
-5. When options change, the rotation timer is automatically restarted.
+4. OLED rotation runs independently via `async_track_time_interval` — only when `oled_mode == "auto"`.
+5. The `select` entity `OLED Modus` toggles rotation at runtime without a restart.
+6. When options change, the rotation timer is automatically restarted.
 
 ---
 

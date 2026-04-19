@@ -39,6 +39,8 @@ class TowerState:
     led_effect: str | None = None
     oled_text: str = ""
     cpu_temp: float | None = None
+    ram_free_pct: float | None = None
+    disk_free_pct: float | None = None
     fan_mode: str = "auto"
     fan_duty: int = 0
 
@@ -119,6 +121,31 @@ class TowerApi:
             except ValueError:
                 pass
 
+        rc, out, _ = await self._run(
+            "grep -E '^(MemTotal|MemAvailable):' /proc/meminfo"
+        )
+        if rc == 0 and out:
+            try:
+                lines = {k.rstrip(":"): int(v.split()[0])
+                         for k, v in (l.split(":", 1) for l in out.splitlines())}
+                total = lines.get("MemTotal", 0)
+                avail = lines.get("MemAvailable", 0)
+                if total > 0:
+                    self.state.ram_free_pct = round(avail / total * 100, 1)
+            except Exception:
+                pass
+
+        rc, out, _ = await self._run("df -k /mnt/data | tail -1")
+        if rc == 0 and out:
+            try:
+                parts = out.split()
+                disk_total = int(parts[1])
+                disk_avail = int(parts[3])
+                if disk_total > 0:
+                    self.state.disk_free_pct = round(disk_avail / disk_total * 100, 1)
+            except Exception:
+                pass
+
         if self.state.fan_available:
             fan_state_file = os.path.join(
                 os.path.dirname(self.data[CONF_FAN_BINARY]), "tower_fan_state.json"
@@ -148,6 +175,8 @@ class TowerApi:
             },
             "cpu": {
                 "temp": self.state.cpu_temp,
+                "ram_free_pct": self.state.ram_free_pct,
+                "disk_free_pct": self.state.disk_free_pct,
             },
             "fan": {
                 "available": self.state.fan_available,
@@ -168,6 +197,8 @@ class TowerApi:
             "Blink Fast": "blink_fast",
             "Rainbow": "rainbow",
             "Pulse": "pulse",
+            "Fire": "fire",
+            "Color Wipe": "color_wipe",
         }
         effect = mapping.get(name)
         if not effect:

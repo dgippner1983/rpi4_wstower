@@ -29,6 +29,7 @@ class TowerCoordinator(DataUpdateCoordinator):
         self._entry = entry
         self._oled_page_index = 0
         self._oled_unsub = None
+        self.oled_mode: str = "auto"
         self.device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name="Tower Hardware",
@@ -48,8 +49,17 @@ class TowerCoordinator(DataUpdateCoordinator):
         except Exception as err:
             raise UpdateFailed(str(err)) from err
 
+    def async_set_oled_mode(self, mode: str) -> None:
+        self.oled_mode = mode
+        if mode == "auto":
+            self.start_oled_rotation()
+        else:
+            self.stop_oled_rotation()
+
     def start_oled_rotation(self) -> None:
         self.stop_oled_rotation()
+        if self.oled_mode != "auto":
+            return
         pages = self._entry.options.get(CONF_OLED_PAGES, [])
         if not pages:
             return
