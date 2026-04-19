@@ -27,9 +27,23 @@ This repository provides a complete package for using the Raspberry Pi 4 [Wavesh
 - Configurable SSH execution for host-side binaries
 - Optional: `packages/tower_control.yaml` for an LED startup rainbow effect
 
+### Prerequisites
+
+**Disable onboard audio (required for LED control)**
+
+The LED strip is driven via GPIO 18, which uses the Raspberry Pi's PWM0 peripheral. On recent kernels the onboard audio driver claims PWM0, causing `ws2811_init` to hang and LED commands to time out. Disabling the onboard audio driver frees PWM0 for LED use.
+
+Add the following line to `/mnt/boot/config.txt` on the HA OS host and reboot:
+
+```
+dtparam=audio=off
+```
+
+> **Note:** This only disables the 3.5 mm onboard audio output. USB sound cards are completely unaffected.
+
 ### Add-on installation (Home Assistant Add-on Repository)
 
-1. Host this repository on GitHub.
+1. Host this repository on Codeberg (or GitHub).
 2. In Home Assistant: **Settings → Add-ons → Add-on Store → ⋮ → Repositories**.
 3. Add your repository URL.
 4. Install and start the **Tower Control** add-on.
@@ -131,9 +145,23 @@ Dieses Repository enthält ein vollständiges Paket für den Raspberry Pi 4 [Wav
 - Konfigurierbare SSH-Verbindung zur Ausführung der Host-Binaries
 - Optional: `packages/tower_control.yaml` für LED-Startup-Regenbogeneffekt
 
+### Voraussetzungen
+
+**Onboard-Audio deaktivieren (erforderlich für LED-Steuerung)**
+
+Der LED-Streifen wird über GPIO 18 angesteuert, der den PWM0-Baustein des Raspberry Pi nutzt. Auf neueren Kerneln beansprucht der onboard-Audio-Treiber PWM0, wodurch `ws2811_init` hängt und LED-Befehle mit einem SSH-Timeout scheitern. Durch Deaktivieren des Audio-Treibers wird PWM0 für die LED-Steuerung freigegeben.
+
+Folgende Zeile in `/mnt/boot/config.txt` auf dem HA-OS-Host eintragen und anschließend neu starten:
+
+```
+dtparam=audio=off
+```
+
+> **Hinweis:** Dies deaktiviert nur den onboard-Audio-Ausgang (3,5-mm-Klinke). USB-Soundkarten sind davon nicht betroffen.
+
 ### Installation Add-on (Home Assistant Add-on Repository)
 
-1. Dieses Repository in GitHub bereitstellen.
+1. Dieses Repository in Codeberg (oder GitHub) bereitstellen.
 2. In Home Assistant: **Einstellungen → Add-ons → Add-on-Store → ⋮ → Repositories**.
 3. Repository-URL eintragen.
 4. Add-on **Tower Control** installieren und starten.
