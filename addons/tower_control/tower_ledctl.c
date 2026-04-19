@@ -14,16 +14,42 @@
 
 #include <ws2811.h>
 
-#define LED_COUNT 8
-#define LED_GPIO 21
-#define LED_DMA 10
-#define LED_BRIGHTNESS 255
+#define DEFAULT_cfg_count 8
+#define DEFAULT_LED_GPIO 18
+#define DEFAULT_LED_DMA 10
+#define DEFAULT_LED_BRIGHTNESS 255
 #define LED_CHANNEL 0
-#define STRIP_TYPE WS2811_STRIP_GRB
 
 #define STATE_DIR "/mnt/data/supervisor/share/tower_control"
 #define STATE_FILE STATE_DIR "/tower_led_state.json"
 #define PID_FILE   STATE_DIR "/tower_led_effect.pid"
+
+/* runtime config, filled from env vars in main() */
+static int cfg_count      = DEFAULT_cfg_count;
+static int cfg_gpio       = DEFAULT_LED_GPIO;
+static int cfg_dma        = DEFAULT_LED_DMA;
+static int cfg_brightness = DEFAULT_LED_BRIGHTNESS;
+static int cfg_strip_type; /* initialised in main() */
+
+static int parse_strip_type(const char *s) {
+    if (s) {
+        if (strcmp(s, "RGB") == 0) return WS2811_STRIP_RGB;
+        if (strcmp(s, "RBG") == 0) return WS2811_STRIP_RBG;
+        if (strcmp(s, "GBR") == 0) return WS2811_STRIP_GBR;
+        if (strcmp(s, "BRG") == 0) return WS2811_STRIP_BRG;
+        if (strcmp(s, "BGR") == 0) return WS2811_STRIP_BGR;
+    }
+    return WS2811_STRIP_GRB;
+}
+
+static void read_env_config(void) {
+    const char *v;
+    if ((v = getenv("TOWER_cfg_count"))      && atoi(v) > 0)  cfg_count      = atoi(v);
+    if ((v = getenv("TOWER_LED_GPIO"))       && atoi(v) >= 0) cfg_gpio       = atoi(v);
+    if ((v = getenv("TOWER_LED_DMA"))        && atoi(v) >= 0) cfg_dma        = atoi(v);
+    if ((v = getenv("TOWER_LED_BRIGHTNESS")) && atoi(v) >= 0) cfg_brightness = atoi(v);
+    cfg_strip_type = parse_strip_type(getenv("TOWER_LED_STRIP_TYPE"));
+}
 
 typedef struct {
     int is_on;
@@ -115,12 +141,12 @@ static ws2811_t make_ledstring(void) {
     ws2811_t ledstring;
     memset(&ledstring, 0, sizeof(ledstring));
     ledstring.freq = WS2811_TARGET_FREQ;
-    ledstring.dmanum = LED_DMA;
-    ledstring.channel[LED_CHANNEL].gpionum = LED_GPIO;
-    ledstring.channel[LED_CHANNEL].count = LED_COUNT;
+    ledstring.dmanum = cfg_dma;
+    ledstring.channel[LED_CHANNEL].gpionum = cfg_gpio;
+    ledstring.channel[LED_CHANNEL].count = cfg_count;
     ledstring.channel[LED_CHANNEL].invert = 0;
-    ledstring.channel[LED_CHANNEL].brightness = LED_BRIGHTNESS;
-    ledstring.channel[LED_CHANNEL].strip_type = STRIP_TYPE;
+    ledstring.channel[LED_CHANNEL].brightness = cfg_brightness;
+    ledstring.channel[LED_CHANNEL].strip_type = cfg_strip_type;
     ledstring.channel[1].gpionum = 0;
     ledstring.channel[1].count = 0;
     ledstring.channel[1].brightness = 0;
@@ -128,7 +154,7 @@ static ws2811_t make_ledstring(void) {
 }
 
 static void fill_all(ws2811_t *ledstring, uint32_t c) {
-    for (int i = 0; i < LED_COUNT; i++) ledstring->channel[LED_CHANNEL].leds[i] = c;
+    for (int i = 0; i < cfg_count; i++) ledstring->channel[LED_CHANNEL].leds[i] = c;
 }
 
 static uint32_t wheel(uint8_t pos, uint8_t brightness) {
@@ -205,8 +231,8 @@ static int run_effect_daemon(void) {
         }
 
         if (strcmp(st.effect, "rainbow") == 0) {
-            for (int i = 0; i < LED_COUNT; i++) {
-                ledstring.channel[LED_CHANNEL].leds[i] = wheel((uint8_t)((i * 256 / LED_COUNT + offset) & 255), (uint8_t)st.brightness);
+            for (int i = 0; i < cfg_count; i++) {
+                ledstring.channel[LED_CHANNEL].leds[i] = wheel((uint8_t)((i * 256 / cfg_count + offset) & 255), (uint8_t)st.brightness);
             }
             ws2811_render(&ledstring);
             offset = (offset + 2) & 255;
@@ -215,14 +241,14 @@ static int run_effect_daemon(void) {
         }
 
         if (strcmp(st.effect, "fire") == 0) {
-            static uint8_t heat[LED_COUNT];
+            static uint8_t heat[cfg_count];
             /* cool down every cell a little */
-            for (int i = 0; i < LED_COUNT; i++) {
-                int cool = (rand() % ((55 * 10) / LED_COUNT + 2));
+            for (int i = 0; i < cfg_count; i++) {
+                int cool = (rand() % ((55 * 10) / cfg_count + 2));
                 heat[i] = (uint8_t)(heat[i] > cool ? heat[i] - cool : 0);
             }
             /* heat drifts upward */
-            for (int i = LED_COUNT - 1; i >= 2; i--)
+            for (int i = cfg_count - 1; i >= 2; i--)
                 heat[i] = (uint8_t)((heat[i - 1] + heat[i - 2] + heat[i - 2]) / 3);
             /* random spark near bottom */
             if ((rand() % 255) < 120) {
@@ -231,7 +257,7 @@ static int run_effect_daemon(void) {
                 heat[y] = (uint8_t)(heat[y] + add > 255 ? 255 : heat[y] + add);
             }
             /* heat -> color: black->red->orange->yellow->white */
-            for (int i = 0; i < LED_COUNT; i++) {
+            for (int i = 0; i < cfg_count; i++) {
                 uint8_t h = heat[i];
                 uint8_t r, g, b;
                 if (h < 85)      { r = h * 3;       g = 0;           b = 0; }
@@ -246,14 +272,14 @@ static int run_effect_daemon(void) {
 
         if (strcmp(st.effect, "color_wipe") == 0) {
             /* wipe in */
-            for (int i = 0; keep_running && i < LED_COUNT; i++) {
+            for (int i = 0; keep_running && i < cfg_count; i++) {
                 ledstring.channel[LED_CHANNEL].leds[i] = color_rgb((uint8_t)st.r, (uint8_t)st.g, (uint8_t)st.b, (uint8_t)st.brightness);
                 ws2811_render(&ledstring);
                 usleep(80000);
             }
             usleep(300000);
             /* wipe out */
-            for (int i = 0; keep_running && i < LED_COUNT; i++) {
+            for (int i = 0; keep_running && i < cfg_count; i++) {
                 ledstring.channel[LED_CHANNEL].leds[i] = 0;
                 ws2811_render(&ledstring);
                 usleep(80000);
@@ -282,6 +308,7 @@ static void usage(const char *prog) {
 }
 
 int main(int argc, char **argv) {
+    read_env_config();
     ensure_dir();
     if (argc < 2) { usage(argv[0]); return 2; }
 
