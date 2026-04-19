@@ -14,7 +14,8 @@
 
 #include <ws2811.h>
 
-#define DEFAULT_cfg_count 8
+#define DEFAULT_LED_COUNT 8
+#define MAX_LED_COUNT 1024
 #define DEFAULT_LED_GPIO 18
 #define DEFAULT_LED_DMA 10
 #define DEFAULT_LED_BRIGHTNESS 255
@@ -25,7 +26,7 @@
 #define PID_FILE   STATE_DIR "/tower_led_effect.pid"
 
 /* runtime config, filled from env vars in main() */
-static int cfg_count      = DEFAULT_cfg_count;
+static int cfg_count      = DEFAULT_LED_COUNT;
 static int cfg_gpio       = DEFAULT_LED_GPIO;
 static int cfg_dma        = DEFAULT_LED_DMA;
 static int cfg_brightness = DEFAULT_LED_BRIGHTNESS;
@@ -44,7 +45,7 @@ static int parse_strip_type(const char *s) {
 
 static void read_env_config(void) {
     const char *v;
-    if ((v = getenv("TOWER_cfg_count"))      && atoi(v) > 0)  cfg_count      = atoi(v);
+    if ((v = getenv("TOWER_LED_COUNT"))       && atoi(v) > 0)  cfg_count      = atoi(v);
     if ((v = getenv("TOWER_LED_GPIO"))       && atoi(v) >= 0) cfg_gpio       = atoi(v);
     if ((v = getenv("TOWER_LED_DMA"))        && atoi(v) >= 0) cfg_dma        = atoi(v);
     if ((v = getenv("TOWER_LED_BRIGHTNESS")) && atoi(v) >= 0) cfg_brightness = atoi(v);
@@ -241,7 +242,7 @@ static int run_effect_daemon(void) {
         }
 
         if (strcmp(st.effect, "fire") == 0) {
-            static uint8_t heat[cfg_count];
+            static uint8_t heat[MAX_LED_COUNT];
             /* cool down every cell a little */
             for (int i = 0; i < cfg_count; i++) {
                 int cool = (rand() % ((55 * 10) / cfg_count + 2));
