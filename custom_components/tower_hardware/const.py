@@ -4,6 +4,11 @@
 # Claude (claude.ai), an AI assistant by Anthropic.
 DOMAIN = "tower_hardware"
 
+CONF_OLED_PAGES = "oled_pages"
+CONF_OLED_ROTATION_INTERVAL = "oled_rotation_interval"
+DEFAULT_OLED_ROTATION_INTERVAL = 10
+MAX_OLED_PAGES = 6
+
 CONF_SSH_HOST = "ssh_host"
 CONF_SSH_PORT = "ssh_port"
 CONF_SSH_USER = "ssh_user"

@@ -8,11 +8,40 @@
           "ssh_host": "SSH Host",
           "ssh_port": "SSH Port",
           "ssh_user": "SSH Benutzer",
-          "ssh_key_path": "Pfad zum privaten SSH-Schl\u00fcssel",
+          "ssh_key_path": "Pfad zum privaten SSH-Schlüssel",
           "ssh_known_hosts": "Pfad zu known_hosts",
           "led_binary": "Pfad zu tower_ledctl",
           "oled_binary": "Pfad zu tower_oledctl",
           "fan_binary": "Pfad zu tower_fanctl"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "OLED Seitenrotation",
+        "description": "Wähle bis zu 6 Entities aus, die automatisch auf dem OLED angezeigt werden. Leere Seiten werden übersprungen.",
+        "data": {
+          "oled_rotation_interval": "Wechselintervall",
+          "page_1_entity": "Seite 1 – Entity",
+          "page_1_label": "Seite 1 – Bezeichnung",
+          "page_1_unit": "Seite 1 – Einheit",
+          "page_2_entity": "Seite 2 – Entity",
+          "page_2_label": "Seite 2 – Bezeichnung",
+          "page_2_unit": "Seite 2 – Einheit",
+          "page_3_entity": "Seite 3 – Entity",
+          "page_3_label": "Seite 3 – Bezeichnung",
+          "page_3_unit": "Seite 3 – Einheit",
+          "page_4_entity": "Seite 4 – Entity",
+          "page_4_label": "Seite 4 – Bezeichnung",
+          "page_4_unit": "Seite 4 – Einheit",
+          "page_5_entity": "Seite 5 – Entity",
+          "page_5_label": "Seite 5 – Bezeichnung",
+          "page_5_unit": "Seite 5 – Einheit",
+          "page_6_entity": "Seite 6 – Entity",
+          "page_6_label": "Seite 6 – Bezeichnung",
+          "page_6_unit": "Seite 6 – Einheit"
         }
       }
     }

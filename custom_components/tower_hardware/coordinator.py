@@ -10,6 +10,7 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -17,7 +18,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .api import TowerApi
-from .const import DOMAIN
+from .const import CONF_OLED_PAGES, CONF_OLED_ROTATION_INTERVAL, DEFAULT_OLED_ROTATION_INTERVAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,6 +26,9 @@ _LOGGER = logging.getLogger(__name__)
 class TowerCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self.api = TowerApi(entry.data)
+        self._entry = entry
+        self._oled_page_index = 0
+        self._oled_unsub = None
         self.device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name="Tower Hardware",
@@ -43,6 +47,47 @@ class TowerCoordinator(DataUpdateCoordinator):
             return await self.api.probe()
         except Exception as err:
             raise UpdateFailed(str(err)) from err
+
+    def start_oled_rotation(self) -> None:
+        self.stop_oled_rotation()
+        pages = self._entry.options.get(CONF_OLED_PAGES, [])
+        if not pages:
+            return
+        interval = self._entry.options.get(CONF_OLED_ROTATION_INTERVAL, DEFAULT_OLED_ROTATION_INTERVAL)
+        self._oled_unsub = async_track_time_interval(
+            self.hass,
+            self._rotate_oled,
+            timedelta(seconds=interval),
+        )
+
+    def stop_oled_rotation(self) -> None:
+        if self._oled_unsub:
+            self._oled_unsub()
+            self._oled_unsub = None
+
+    async def _rotate_oled(self, now) -> None:
+        pages = self._entry.options.get(CONF_OLED_PAGES, [])
+        if not pages:
+            return
+        self._oled_page_index = (self._oled_page_index + 1) % len(pages)
+        page = pages[self._oled_page_index]
+
+        entity_id = page.get("entity", "")
+        if not entity_id:
+            return
+
+        state = self.hass.states.get(entity_id)
+        value = state.state if state else "?"
+        unit = page.get("unit", "")
+        label = page.get("label", "")
+
+        value_str = f"{value} {unit}".strip() if unit else value
+        text = f"{label}\n{value_str}" if label else value_str
+
+        try:
+            await self.api.oled_text(text)
+        except Exception as err:
+            _LOGGER.warning("OLED rotation failed: %s", err)
 
     async def async_led_off(self):
         await self.api.led_off()
