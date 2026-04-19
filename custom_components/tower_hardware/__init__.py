@@ -7,11 +7,19 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, PLATFORMS
+from .const import CONF_FAN_BINARY, DEFAULT_FAN_BINARY, DOMAIN, PLATFORMS
 from .coordinator import TowerCoordinator
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    return True
+
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    if entry.version < 2:
+        new_data = {**entry.data}
+        new_data.setdefault(CONF_FAN_BINARY, DEFAULT_FAN_BINARY)
+        hass.config_entries.async_update_entry(entry, data=new_data, version=2)
     return True
 
 
