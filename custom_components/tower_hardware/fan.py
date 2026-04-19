@@ -56,11 +56,11 @@ class TowerFan(TowerBaseEntity, FanEntity):
         await self.coordinator.async_fan_set(int(pct))
 
     async def async_turn_off(self, **kwargs) -> None:
-        await self.coordinator.async_fan_off()
+        await self.coordinator.async_fan_auto()
 
     async def async_set_percentage(self, percentage: int) -> None:
         if percentage == 0:
-            await self.coordinator.async_fan_off()
+            await self.coordinator.async_fan_auto()
         else:
             await self.coordinator.async_fan_set(percentage)
 
