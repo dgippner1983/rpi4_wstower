@@ -1,5 +1,5 @@
 name: Tower Control
-version: 0.1.1
+version: 0.1.2
 slug: tower_control
 description: OLED- und LED-Steuerung für den Tower Waveshare PI4B Mini Tower Acce
 startup: services
