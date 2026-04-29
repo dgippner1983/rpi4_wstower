@@ -26,7 +26,7 @@ from PIL import Image, ImageDraw, ImageFont
 # Characters to include
 # ASCII printable + German umlauts/ß
 # ---------------------------------------------------------------------------
-CODEPOINTS = list(range(32, 127)) + [ord(c) for c in "äöüÄÖÜß"]
+CODEPOINTS = list(range(32, 127)) + [ord(c) for c in "äöüÄÖÜß°"]
 
 # ---------------------------------------------------------------------------
 # Font sizes  (name must match usage in tower_oledctl.c)

@@ -8,6 +8,30 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.3.2] – 2026-04-29
+
+### Add-on `tower_control`
+
+#### Neu / Added
+- **`tower_ledctl on`** — schaltet alle LEDs weiß mit 50 % Helligkeit ein; nützlich als einfacher Einschalt-Befehl ohne Farbauswahl.
+  **`tower_ledctl on`** — turns all LEDs on white at 50 % brightness; useful as a simple on-command without colour selection.
+- **Gradzeichen `°` (U+00B0)** in `gen_overpass_font.py` aufgenommen — wird jetzt in alle drei Fontgrößen eingebettet und korrekt auf dem OLED angezeigt.
+  **Degree sign `°` (U+00B0)** added to `gen_overpass_font.py` — now embedded in all three font sizes and rendered correctly on the OLED.
+- Zweisprachige Inline-Kommentare (DE/EN) in `tower_ledctl.c` ergänzt.
+  Bilingual inline comments (DE/EN) added to `tower_ledctl.c`.
+
+#### Behoben / Fixed
+- `tower_ledctl on`: `atoi(255)` / `atoi(127)` war undefined behavior (Integer statt `const char *`); durch direkte Zuweisung ersetzt.
+  `tower_ledctl on`: `atoi(255)` / `atoi(127)` was undefined behavior (integer passed instead of `const char *`); replaced with direct assignment.
+
+### Integration `tower_hardware`
+
+#### Behoben / Fixed
+- OLED-Seitenrotation zeigte kurzzeitig „unknown" oder „unavailable" an, wenn eine Entity noch keinen gültigen Zustand hatte. Solche Seiten werden jetzt übersprungen.
+  OLED page rotation briefly showed "unknown" or "unavailable" when an entity had no valid state yet. Such pages are now skipped.
+
+---
+
 ## [0.3.0] – 2026-04-19
 
 ### Integration `tower_hardware`

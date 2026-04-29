@@ -14,7 +14,7 @@
 
 #include <ws2811.h>
 
-#define DEFAULT_LED_COUNT 8
+#define DEFAULT_LED_COUNT 4
 #define MAX_LED_COUNT 1024
 #define DEFAULT_LED_GPIO 18
 #define DEFAULT_LED_DMA 10
@@ -25,7 +25,8 @@
 #define STATE_FILE STATE_DIR "/tower_led_state.json"
 #define PID_FILE   STATE_DIR "/tower_led_effect.pid"
 
-/* runtime config, filled from env vars in main() */
+/* DE: Laufzeit-Konfiguration, wird in main() aus Umgebungsvariablen befuellt.
+   EN: Runtime configuration, populated from environment variables in main(). */
 static int cfg_count      = DEFAULT_LED_COUNT;
 static int cfg_gpio       = DEFAULT_LED_GPIO;
 static int cfg_dma        = DEFAULT_LED_DMA;
@@ -66,6 +67,8 @@ static volatile sig_atomic_t keep_running = 1;
 static void handle_signal(int sig) { (void)sig; keep_running = 0; }
 static void ensure_dir(void) { mkdir(STATE_DIR, 0755); }
 
+/* DE: Skaliert einen 8-Bit-Wert v auf Helligkeit b (0-255).
+   EN: Scales an 8-bit value v by brightness b (0-255). */
 static uint8_t scale8(uint8_t v, uint8_t b) { return (uint8_t)((v * b) / 255); }
 
 static uint32_t color_rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t brightness) {
@@ -80,6 +83,8 @@ static void default_state(led_state_t *st) {
     strcpy(st->effect, "");
 }
 
+/* DE: Speichert den LED-Zustand als JSON-Datei (fuer Integration und Daemon-Neustart).
+   EN: Persists LED state as a JSON file (for integration polling and daemon restart). */
 static int save_state(const led_state_t *st) {
     FILE *f = fopen(STATE_FILE, "w");
     if (!f) return -1;
@@ -132,6 +137,8 @@ static void write_pid(pid_t pid) {
     fclose(f);
 }
 
+/* DE: Beendet einen laufenden Effekt-Daemon per SIGTERM und loescht die PID-Datei.
+   EN: Terminates a running effect daemon via SIGTERM and removes the PID file. */
 static void stop_effect_daemon(void) {
     int pid = read_pid();
     if (pid > 0) kill(pid, SIGTERM);
@@ -166,6 +173,8 @@ static uint32_t wheel(uint8_t pos, uint8_t brightness) {
     return color_rgb(pos * 3, 255 - pos * 3, 0, brightness);
 }
 
+/* DE: Setzt alle LEDs einmalig auf eine Farbe (kein Daemon, kein Loop).
+   EN: Sets all LEDs once to a solid colour (no daemon, no loop). */
 static int render_static(const led_state_t *st) {
     ws2811_t ledstring = make_ledstring();
     ws2811_return_t ret = ws2811_init(&ledstring);
@@ -185,6 +194,8 @@ static int render_static(const led_state_t *st) {
     return 0;
 }
 
+/* DE: Forkt einen Kind-Prozess, der den Effekt in einer Endlosschleife rendert.
+   EN: Forks a child process that renders the effect in an endless loop. */
 static int run_effect_daemon(void) {
     pid_t child = fork();
     if (child < 0) return 1;
@@ -304,6 +315,7 @@ static int run_effect_daemon(void) {
 static void usage(const char *prog) {
     fprintf(stderr, "Usage:\n");
     fprintf(stderr, "  %s off\n", prog);
+    fprintf(stderr, "  %s on\n", prog);
     fprintf(stderr, "  %s color R G B BRIGHTNESS\n", prog);
     fprintf(stderr, "  %s effect blink_slow|blink_fast|rainbow|pulse|fire|color_wipe\n", prog);
 }
@@ -319,6 +331,17 @@ int main(int argc, char **argv) {
     if (strcmp(argv[1], "off") == 0) {
         stop_effect_daemon();
         st.is_on = 0; st.r = 0; st.g = 0; st.b = 0; st.brightness = 0; strcpy(st.effect, "");
+        save_state(&st);
+        return render_static(&st);
+    }
+
+    if (strcmp(argv[1], "on") == 0) {
+        /* DE: Schaltet alle LEDs weiß mit 50 % Helligkeit ein (127/255).
+           EN: Turns all LEDs on white at 50 % brightness (127/255). */
+        stop_effect_daemon();
+        st.is_on = 1;
+        st.r = 255; st.g = 255; st.b = 255; st.brightness = 127;
+        strcpy(st.effect, "");
         save_state(&st);
         return render_static(&st);
     }

@@ -1,5 +1,5 @@
 name: Tower Control
-version: 0.3.1
+version: 0.3.2
 slug: tower_control
 description: OLED- und LED-Steuerung für den Tower Waveshare PI4B Mini Tower Acce
 startup: services
@@ -19,15 +19,15 @@ devices:
   - /dev/gpiomem
   - /dev/i2c-1
 options:
-  led_count: 8
+  led_count: 4
   led_gpio: 18
   led_dma: 10
   brightness_limit: 255
   strip_type: GRB
   fan_gpio: 14
-  fan_off_temp: 40
-  fan_min_temp: 45
-  fan_max_temp: 75
+  fan_off_temp: 30
+  fan_min_temp: 31
+  fan_max_temp: 60
   fan_min_duty: 25
 schema:
   led_count: "int(1,1024)"

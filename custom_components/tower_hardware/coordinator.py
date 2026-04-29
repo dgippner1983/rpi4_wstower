@@ -87,7 +87,9 @@ class TowerCoordinator(DataUpdateCoordinator):
             return
 
         state = self.hass.states.get(entity_id)
-        value = state.state if state else "?"
+        if not state or state.state in ("unknown", "unavailable"):
+            return
+        value = state.state
         unit = page.get("unit", "")
         label = page.get("label", "")
 
