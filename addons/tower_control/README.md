@@ -1,4 +1,4 @@
-# Tower Control 0.2.0
+# Tower Control 0.3.2
 
 Enthält die OLED- und LED-Steuerung für den [Waveshare PI4B Mini Tower Acce](https://www.waveshare.com/wiki/PI4B_Mini_Tower_Acce#Connection_Details)
 
