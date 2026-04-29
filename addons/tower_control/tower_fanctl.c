@@ -194,6 +194,7 @@ int main(int argc, char *argv[]) {
     int  cycles_per_check = pwm_hz * 2;
     int  cycle            = cycles_per_check;
     long last_temp        = 0;
+    time_t last_log       = 0;
 
     while (running) {
         if (cycle >= cycles_per_check) {
@@ -206,8 +207,12 @@ int main(int argc, char *argv[]) {
                 last_temp = read_temp_mc();
                 int new_duty = calc_duty(last_temp, duty, off_temp, min_temp, max_temp, min_duty);
                 if (new_duty != duty) {
-                    fprintf(stdout, "temp=%.1f°C duty=%d%%\n", last_temp / 1000.0, new_duty);
-                    fflush(stdout);
+                    time_t now = time(NULL);
+                    if (now - last_log >= 600) {
+                        fprintf(stdout, "» CPU Temperature %.1f°C, Fan duty: %d%%\n", last_temp / 1000.0, new_duty);
+                        fflush(stdout);
+                        last_log = now;
+                    }
                     duty = new_duty;
                 }
                 save_fan_state("auto", duty, last_temp, -1);

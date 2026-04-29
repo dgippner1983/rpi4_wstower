@@ -1,4 +1,4 @@
-# Tower Control for Home Assistant 0.3.2
+# Tower Control for Home Assistant 0.3.2.1
 
 ## 🇬🇧 English
 

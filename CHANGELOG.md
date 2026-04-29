@@ -8,6 +8,16 @@ This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.3.2.1] – 2026-04-29
+
+### Add-on `tower_control`
+
+#### Behoben / Fixed
+- **`tower_fanctl`**: Log-Spam reduziert — Temperatur-/Duty-Änderungen werden jetzt höchstens alle 10 Minuten geloggt, um endloses Vollschreiben des Logs bei Temperaturschwankungen zu verhindern.
+  **`tower_fanctl`**: Reduced log spam — temperature/duty changes are now logged at most once every 10 minutes to prevent the log from filling up on temperature oscillations.
+
+---
+
 ## [0.3.2] – 2026-04-29
 
 ### Add-on `tower_control`

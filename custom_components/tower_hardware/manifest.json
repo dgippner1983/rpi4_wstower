@@ -1,7 +1,7 @@
 {
   "domain": "tower_hardware",
   "name": "Tower Hardware",
-  "version": "0.3.2",
+  "version": "0.3.2.1",
   "documentation": "https://codeberg.org/dgippner/rpi4_minitower_haos/src/branch/main/documentation",
   "requirements": [],
   "codeowners": [],
